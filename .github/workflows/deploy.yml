@@ -1,0 +1,59 @@
+
+name: WONBILLS CI-CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Validate Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check Frontend File
+        run: |
+          test -f index.html
+          echo "Frontend file exists"
+
+      - name: Validate HTML Basics
+        run: |
+          grep -q '<html' index.html
+          grep -q '</html>' index.html
+          grep -q 'WONBILLS' index.html
+          echo "Frontend validation successful"
+
+      - name: Upload Website Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy Website
+        id: deployment
+        uses: actions/deploy-pages@v4
