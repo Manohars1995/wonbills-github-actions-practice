@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard/
+Disallow: /app/
+Disallow: /settings/
+Disallow: /invoice/
+Disallow: /payment/
+
+Sitemap: https://wonbills.com/sitemap.xml

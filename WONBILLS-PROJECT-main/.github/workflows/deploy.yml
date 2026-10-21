@@ -1,0 +1,40 @@
+name: WONBILLS Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY_BASE64 }}" | base64 -d > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+
+      - name: Test EC2 connection
+        run: |
+          ssh -i ~/.ssh/ec2_key \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "hostname && whoami && node --version"
+
+      - name: Deploy sample website
+        run: |
+          scp -i ~/.ssh/ec2_key \
+            -o StrictHostKeyChecking=no \
+            sample-deployment/index.html \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/index.html
+
+          ssh -i ~/.ssh/ec2_key \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "sudo cp /tmp/index.html /var/www/html/index.html && sudo chmod 644 /var/www/html/index.html"

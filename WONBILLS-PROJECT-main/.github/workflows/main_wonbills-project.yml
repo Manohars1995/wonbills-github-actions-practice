@@ -1,0 +1,180 @@
+name: Deploy WONBILLS with Docker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ==========================================
+      # 1. Checkout Repository
+      # ==========================================
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # ==========================================
+      # 2. Setup SSH
+      # ==========================================
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          printf '%s\n' '${{ secrets.EC2_SSH_KEY }}' > ~/.ssh/ec2_key
+
+          chmod 600 ~/.ssh/ec2_key
+
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+
+      # ==========================================
+      # 3. Test EC2 Connection
+      # ==========================================
+
+      - name: Test EC2 connection
+        run: |
+          ssh \
+            -i ~/.ssh/ec2_key \
+            -o StrictHostKeyChecking=yes \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "echo EC2 connection successful"
+
+
+      # ==========================================
+      # 4. Deploy Application using Docker
+      # ==========================================
+
+      - name: Build and deploy Docker containers
+        run: |
+
+          ssh \
+            -i ~/.ssh/ec2_key \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+
+            set -e
+
+            echo "======================================"
+            echo "Starting WONBILLS Docker Deployment"
+            echo "======================================"
+
+
+            # ==================================
+            # Go to application directory
+            # ==================================
+
+            cd /home/ubuntu/WONBILLS-PROJECT
+
+
+            # ==================================
+            # Get latest GitHub code
+            # ==================================
+
+            echo "Pulling latest code..."
+
+            git fetch origin
+
+            git reset --hard origin/main
+
+
+            # ==================================
+            # Backend
+            # ==================================
+
+            echo "======================================"
+            echo "Building Backend Docker Image"
+            echo "======================================"
+
+            cd /home/ubuntu/WONBILLS-PROJECT/wonbills-backend
+
+            docker build \
+              -t wonbills-backend:latest \
+              .
+
+
+            # ==================================
+            # Frontend
+            # ==================================
+
+            echo "======================================"
+            echo "Building Frontend Docker Image"
+            echo "======================================"
+
+            cd /home/ubuntu/WONBILLS-PROJECT/wonbills-frontend
+
+            docker build \
+              -t wonbills-frontend:latest \
+              .
+
+
+            # ==================================
+            # Stop Old Backend Container
+            # ==================================
+
+            echo "Stopping old backend container..."
+
+            docker stop wonbills-backend || true
+
+            docker rm wonbills-backend || true
+
+
+            # ==================================
+            # Stop Old Frontend Container
+            # ==================================
+
+            echo "Stopping old frontend container..."
+
+            docker stop wonbills-frontend || true
+
+            docker rm wonbills-frontend || true
+
+
+            # ==================================
+            # Start Backend Container
+            # ==================================
+
+            echo "Starting backend container..."
+
+            docker run -d \
+              --name wonbills-backend \
+              --restart unless-stopped \
+              -p 8014:8014 \
+              wonbills-backend:latest
+
+
+            # ==================================
+            # Start Frontend Container
+            # ==================================
+
+            echo "Starting frontend container..."
+
+            docker run -d \
+              --name wonbills-frontend \
+              --restart unless-stopped \
+              -p 5173:5173 \
+              wonbills-frontend:latest
+
+
+            # ==================================
+            # Show Running Containers
+            # ==================================
+
+            echo "======================================"
+            echo "Running Docker Containers"
+            echo "======================================"
+
+            docker ps
+
+
+            echo "======================================"
+            echo "Deployment Completed Successfully"
+            echo "======================================"
+
+          EOF

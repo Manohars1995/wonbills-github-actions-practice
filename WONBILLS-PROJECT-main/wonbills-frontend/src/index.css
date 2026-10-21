@@ -1,0 +1,405 @@
+@import "tailwindcss";
+
+/* html,
+body {
+  height: 100%;
+  overflow: hidden;
+} */
+
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* FINAL GLOBAL SCROLLBAR */
+
+
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #10509a, #0c3978);
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #1b5fc4, #0c3978);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #10509a #f5f5f5;
+}
+
+:root {
+  --react-international-phone-height: 34px !important;
+  --react-international-phone-background-color: transparent !important;
+  --primary-main: #000000;
+  --primary-contrastText: #ffffff;
+
+  --secondary-main: #cccc;
+  --secondary-contrastText: #ffffff;
+
+  --background-default: #ffffff;
+  --background-paper: #f5f5f5;
+  --background-secondary: #e5e6e4;
+
+  --text-primary: #000000;
+  --text-secondary: #333333;
+
+  --border: #e0e0e0;
+  --border-secondary: #cccccc;
+
+  --accent-blue: #007bff;
+  --accent-red: #ff4d4f;
+  --accent-green: #52c41a;
+  --accent-yellow: #fcd34d;
+  --accent-yellow-hover: #fbbf24;
+
+  --hover-primary: #1a1a1a;
+  --hover-accentBlue: #0056b3;
+
+  --activeBgColor: #ffcc91;
+
+  --btn-primary: #e5e6e4;
+  --btn-primaryhover: #cfd2cd;
+  --btn-cancel: #ffedd5;
+
+  --card-primary: #f8edeb;
+
+  --tab-bg: #e9ecef;
+
+  /* --tile-bg:#9877ff; */
+  --tile-bg: #a68b73;
+  --tile-hover-bg: #8e735c;
+  --tile-btn: #f5f1ed;
+  --tile-btn-hover: #e4d9cf;
+  --tile-btn-text: #5a3e2b;
+  --tile-text: #3a2c20;
+
+  --scrollbar-bg: #f0f0f0;
+  --scrollbar-thumb: #c0c0c0;
+  --scrollbar-thumb-hover: #a0a0a0;
+
+  --loader-skeleton-bg: #f8f9fa;
+  --loader-skeleton-block: #e9ecef;
+  --loader-skeleton-img: #ccc;
+}
+
+.font-caveat {
+  font-family: "Caveat", cursive;
+}
+
+.font-sour-gummy {
+  font-family: "Sour Gummy", cursive;
+}
+
+@font-face {
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* scrollbar styles */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* Thumb style */
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 6px;
+}
+
+/* Hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.wave-loader {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #ade8f4;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  /* box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5); */
+}
+
+.wave-loader::before,
+.wave-loader::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.wave-loader::before {
+  border-radius: 40%;
+  background: rgba(255, 255, 255, 1);
+  animation: animateWave 15s linear infinite;
+}
+
+.wave-loader::after {
+  border-radius: 35%;
+  background: rgba(255, 255, 255, 0.5);
+  animation: animateWave 15s linear infinite;
+}
+
+@keyframes animateWave {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -80%) rotate(270deg);
+  }
+  80%,
+  90% {
+    transform: translate(-50%, -100%) rotate(360deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(340deg);
+  }
+}
+
+.slot-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #343a40 transparent;
+}
+
+.slot-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.slot-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(52, 58, 64, 0.3);
+  border-radius: 6px;
+}
+
+.slot-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #343a40;
+}
+
+/* REMOVE ALL INTERNAL BORDERS FROM react-international-phone */
+
+.PhoneInput {
+  border: none !important;
+}
+
+.PhoneInputCountry {
+  border: none !important;
+  background: transparent !important;
+}
+
+.PhoneInputCountrySelect {
+  border: none !important;
+  background: transparent !important;
+}
+
+.PhoneInputCountryIcon {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.PhoneInputCountryIcon--square,
+.PhoneInputCountryIcon--border {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.PhoneInputInput {
+  border: none !important;
+  background: transparent !important;
+}
+
+/* Remove the divider line between flag + input */
+.PhoneInputCountrySelect:after {
+  display: none !important;
+}
+.react-international-phone-country-selector-button {
+  border: none !important;
+  height: 34 !important;
+}
+
+/* Remove hover background from country selector */
+.PhoneInputCountrySelect:hover,
+.PhoneInputCountry:hover {
+  background: transparent !important;
+}
+
+/* Dropdown container: rounded corners + custom border */
+.react-international-phone-country-selector-dropdown {
+  border-radius: 0.75rem !important; /* ~ rounded-xl */
+  border: 2px solid #cccccc !important; /* clip inner corners */
+}
+
+/* Optional – tweak items + hover color to match your design */
+.react-international-phone-country-selector-dropdown__list-item {
+  background-color: #ffffff !important;
+}
+
+.react-international-phone-country-selector-dropdown__list-item:hover {
+  background-color: #f3f4f6 !important; /* Tailwind gray-100 style */
+}
+
+/* Fix scrollbar inside react-international-phone dropdown */
+.react-international-phone-country-selector-dropdown,
+.react-international-phone-country-selector-dropdown * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) #ffffff !important; /* white track */
+}
+
+/* Webkit override */
+.react-international-phone-country-selector-dropdown::-webkit-scrollbar,
+.react-international-phone-country-selector-dropdown *::-webkit-scrollbar {
+  width: 8px;
+}
+
+.react-international-phone-country-selector-dropdown::-webkit-scrollbar-thumb,
+.react-international-phone-country-selector-dropdown
+  *::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.react-international-phone-country-selector-dropdown::-webkit-scrollbar-track,
+.react-international-phone-country-selector-dropdown
+  *::-webkit-scrollbar-track {
+  background: #ffffff; /* make track white inside dropdown */
+}
+
+@layer components {
+  /* PRO PILL */
+  .pro-pill {
+    @apply text-indigo-700 font-semibold
+           bg-indigo-100/70
+           border border-indigo-200
+           shadow-[0_6px_14px_rgba(79,70,229,0.18)]
+           relative overflow-hidden;
+  }
+
+  /* EXPIRED PILL */
+  .expired-pill {
+    @apply text-red-600 font-semibold
+           bg-red-50
+           border border-red-200
+           shadow-[0_6px_14px_rgba(220,38,38,0.15)]
+           relative overflow-hidden;
+  }
+
+  /* TRIAL / FREE PILL */
+  .trial-pill {
+    @apply text-indigo-600 font-semibold
+           bg-indigo-50
+           border border-indigo-100
+           shadow-[0_6px_14px_rgba(79,70,229,0.12)]
+           relative overflow-hidden;
+  }
+
+  /* SHINE EFFECT */
+  .pill-shine::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0)
+    );
+    pointer-events: none;
+  }
+}
+
+@keyframes shineSweep {
+  0% {
+    left: -180%;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  60% {
+    left: 180%;
+    opacity: 1;
+  }
+  100% {
+    left: 180%;
+    opacity: 0;
+  }
+}
+
+@keyframes upload-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.animate-upload-bar {
+  animation: upload-bar 1.2s ease-in-out infinite;
+}
+
+.dot {
+  display: inline-block; /* Ensures opacity/transform apply correctly */
+  opacity: 0;
+  animation: dots 1.5s infinite both;
+}
+
+.dot-2 {
+  animation-delay: 0.3s;
+}
+
+.dot-3 {
+  animation-delay: 0.6s;
+}
+
+@keyframes dots {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  } /* Dot fades in */
+  85% {
+    opacity: 1;
+  } /* Dot stays visible */
+  90%,
+  100% {
+    opacity: 0;
+  } /* All dots vanish at the end */
+}
+
+
+.goog-te-banner-frame,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+.skiptranslate {
+  display: none !important;
+}
