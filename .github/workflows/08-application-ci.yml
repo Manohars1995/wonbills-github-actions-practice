@@ -1,0 +1,61 @@
+
+name: Phase 4 - Application Build and Test
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+    paths:
+      - 'phase4-node-app/**'
+      - '.github/workflows/08-application-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'phase4-node-app/**'
+      - '.github/workflows/08-application-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Test and Build Node.js App
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: phase4-node-app
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: phase4-node-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Verify build output
+        run: test -f dist/app.js
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: phase4-node-app-build
+          path: phase4-node-app/dist/
+          if-no-files-found: error
+          retention-days: 7

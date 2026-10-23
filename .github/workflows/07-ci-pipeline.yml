@@ -1,0 +1,39 @@
+
+name: CI Pipeline Practice
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Basic CI Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Check repository files
+        run: |
+          echo "Checking repository files"
+          test -f README.md
+          echo "README.md exists"
+
+      - name: Validate workflow directory
+        run: |
+          echo "Checking GitHub Actions workflow directory"
+          test -d .github/workflows
+          echo "Workflow directory exists"
+
+      - name: CI completed
+        run: echo "All basic CI checks passed"

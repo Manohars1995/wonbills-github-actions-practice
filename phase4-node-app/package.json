@@ -1,0 +1,9 @@
+{
+  "name": "github-actions-phase4-practice",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "build": "node build.js"
+  }
+}
