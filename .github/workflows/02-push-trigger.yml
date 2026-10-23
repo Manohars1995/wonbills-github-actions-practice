@@ -1,0 +1,21 @@
+name : push trigger pratice
+
+on:
+ push :
+   branches :
+    -main
+
+permissions :
+  contents : read
+
+jobs :
+  push-demo :
+   runs-on : ubuntu-latest
+
+  steps :
+   -name : checkout Repo
+    uses : actions/checkout@v4
+   -name : Display Push Meassage
+    uses : echo "Push Trigger executed successfully"
+   -name : Display Branch
+    uses : echo "Branch is $GITHUB_REF_NAME"
