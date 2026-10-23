@@ -1,0 +1,29 @@
+
+name: GitHub Actions Fundamentals
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  fundamentals:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Welcome message
+        run: echo "Welcome to GitHub Actions"
+
+      - name: Display date
+        run: date -u
+
+      - name: Display runner operating system
+        run: echo "Running on GitHub Actions Linux runner"
+
+      - name: Display repository
+        run: echo "$GITHUB_REPOSITORY"
+
+      - name: Display commit SHA
+        run: echo "$GITHUB_SHA"
