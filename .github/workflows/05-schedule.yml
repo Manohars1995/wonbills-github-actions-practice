@@ -1,0 +1,20 @@
+name: Daily Scheduled Check
+
+on:
+  schedule:
+    - cron: '45 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Display scheduled execution
+        run: echo "Scheduled check executed"
+
+      - name: Display UTC time
+        run: date -u
