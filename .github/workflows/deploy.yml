@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check Frontend File
         run: |
@@ -56,4 +56,4 @@ jobs:
     steps:
       - name: Deploy Website
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

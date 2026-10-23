@@ -1,0 +1,28 @@
+
+name: Manual Deployment Practice
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Select environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Display selected environment
+        run: echo "Selected environment is ${{ inputs.environment }}"
+
+      - name: Deployment simulation
+        run: echo "Deployment simulation completed"
