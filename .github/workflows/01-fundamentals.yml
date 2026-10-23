@@ -27,5 +27,4 @@ jobs:
 
       - name: Display commit SHA
         run: echo "$GITHUB_SHA"
-      - name: Test failure handling
-        run: exit 1
+      
