@@ -1,0 +1,21 @@
+name : Pull Request Validate
+
+on:
+  pull_request:
+   branches :
+    -main
+  types :
+    - opened
+    - synchronize
+    - reopened
+jobs :
+  validate :
+    runs_on : ubuntu-latest
+
+  steps :
+   -name : checkout code
+    uses : actions/checkout@v4
+   -name : validate pull request
+    uses : echo "Pull Req2ues"
+   -name : Run Basic Check
+    uses : test -f README.md
