@@ -1,4 +1,3 @@
-
 name: WONBILLS EC2 Deployment
 
 on:
@@ -31,14 +30,18 @@ jobs:
           test -n "$EC2_HOST"
           test -n "$EC2_USERNAME"
           test -n "$EC2_SSH_KEY"
+
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
+
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+
           ssh -i ~/.ssh/ec2_key -o BatchMode=yes \
-            "$EC2_USERNAME@$EC2_HOST" 'echo "SSH connection successful"'
+            "$EC2_USERNAME@$EC2_HOST" \
+            'echo "SSH connection successful"'
 
       - name: Deploy application
         env:
@@ -47,6 +50,7 @@ jobs:
           DEPLOY_TAG: ${{ github.sha }}
         run: |
           set -eu
+
           ssh -i ~/.ssh/ec2_key -o BatchMode=yes \
             "$EC2_USERNAME@$EC2_HOST" \
             "DEPLOY_TAG='$DEPLOY_TAG' bash -se" <<'REMOTE'
@@ -54,19 +58,25 @@ jobs:
 
           APP_DIR="$HOME/wonbills-github-actions-practice"
           cd "$APP_DIR"
+
           git fetch origin main
           git pull --ff-only origin main
 
           cd "$APP_DIR/WONBILLS-PROJECT-main"
+
           test -f wonbills-backend/.env
           test -f wonbills-frontend/.env
 
           BACKEND_IMAGE="wonbills-backend:$DEPLOY_TAG"
           FRONTEND_IMAGE="wonbills-frontend:$DEPLOY_TAG"
 
+          echo "Building backend image..."
           sudo docker build -t "$BACKEND_IMAGE" ./wonbills-backend
+
+          echo "Building frontend image..."
           sudo docker build -t "$FRONTEND_IMAGE" ./wonbills-frontend
 
+          # Remove leftover candidate containers from a previous attempt.
           sudo docker rm -f wonbills-backend-new wonbills-frontend-new 2>/dev/null || true
 
           cleanup_candidates() {
@@ -74,70 +84,108 @@ jobs:
           }
           trap cleanup_candidates EXIT
 
+          echo "Starting candidate backend..."
           sudo docker run -d --name wonbills-backend-new \
             --env-file wonbills-backend/.env \
             -p 18014:8014 "$BACKEND_IMAGE"
 
+          echo "Starting candidate frontend..."
           sudo docker run -d --name wonbills-frontend-new \
             --env-file wonbills-frontend/.env \
             -p 15173:5173 "$FRONTEND_IMAGE"
 
-          if ! curl --retry 5 --retry-delay 2 --retry-connrefused \
-            -fsS http://127.0.0.1:18014/api/app-version >/dev/null; then
-            sudo docker logs wonbills-backend-new || true
-            sudo docker logs wonbills-frontend-new || true
+          # Give the backend up to 30 seconds to respond.
+          backend_ready=false
+
+          for attempt in {1..15}; do
+            if curl -fsS --max-time 5 \
+              http://127.0.0.1:18014/api/app-version \
+              >/dev/null 2>&1; then
+              backend_ready=true
+              echo "Backend health check passed."
+              break
+            fi
+
+            echo "Waiting for backend readiness ($attempt/15)..."
+            sleep 2
+          done
+
+          if [ "$backend_ready" != "true" ]; then
+            echo "Backend health check failed."
+            sudo docker logs --tail 100 wonbills-backend-new || true
+            sudo docker inspect -f \
+              'Status={{.State.Status}} ExitCode={{.State.ExitCode}} Error={{.State.Error}}' \
+              wonbills-backend-new || true
+            sudo docker logs --tail 100 wonbills-frontend-new || true
             exit 1
           fi
 
+          # Verify the candidate frontend before switching production.
           if ! curl --retry 5 --retry-delay 2 --retry-connrefused \
             -fsS http://127.0.0.1:15173/ >/dev/null; then
-            sudo docker logs wonbills-frontend-new || true
-            sudo docker logs wonbills-backend-new || true
+            echo "Frontend candidate health check failed."
+            sudo docker logs --tail 100 wonbills-frontend-new || true
             exit 1
           fi
 
+          echo "Both candidate containers passed health checks."
+
+          # Save the currently deployed image IDs for rollback.
           OLD_BACKEND_ID="$(sudo docker inspect -f '{{.Image}}' wonbills-backend)"
           OLD_FRONTEND_ID="$(sudo docker inspect -f '{{.Image}}' wonbills-frontend)"
+
           sudo docker image tag "$OLD_BACKEND_ID" wonbills-backend:rollback
           sudo docker image tag "$OLD_FRONTEND_ID" wonbills-frontend:rollback
 
           rollback() {
             echo "Deployment failed; restoring previous images."
+
             sudo docker rm -f wonbills-frontend wonbills-backend 2>/dev/null || true
+
             sudo docker run -d --name wonbills-backend --restart unless-stopped \
-              --env-file wonbills-backend/.env -p 8014:8014 wonbills-backend:rollback
+              --env-file wonbills-backend/.env \
+              -p 8014:8014 wonbills-backend:rollback
+
             sudo docker run -d --name wonbills-frontend --restart unless-stopped \
-              --env-file wonbills-frontend/.env -p 5173:5173 wonbills-frontend:rollback
+              --env-file wonbills-frontend/.env \
+              -p 5173:5173 wonbills-frontend:rollback
           }
 
+          echo "Switching production containers..."
           sudo docker rm -f wonbills-frontend wonbills-backend
 
           if ! sudo docker run -d --name wonbills-backend --restart unless-stopped \
-            --env-file wonbills-backend/.env -p 8014:8014 "$BACKEND_IMAGE"; then
+            --env-file wonbills-backend/.env \
+            -p 8014:8014 "$BACKEND_IMAGE"; then
             rollback
             exit 1
           fi
 
           if ! sudo docker run -d --name wonbills-frontend --restart unless-stopped \
-            --env-file wonbills-frontend/.env -p 5173:5173 "$FRONTEND_IMAGE"; then
+            --env-file wonbills-frontend/.env \
+            -p 5173:5173 "$FRONTEND_IMAGE"; then
             rollback
             exit 1
           fi
 
+          # Verify production backend after the switch.
           if ! curl --retry 5 --retry-delay 2 --retry-connrefused \
             -fsS http://127.0.0.1:8014/api/app-version >/dev/null; then
-            sudo docker logs wonbills-backend || true
+            echo "Production backend health check failed."
+            sudo docker logs --tail 100 wonbills-backend || true
             rollback
             exit 1
           fi
 
+          # Verify production frontend after the switch.
           if ! curl --retry 5 --retry-delay 2 --retry-connrefused \
             -fsS http://127.0.0.1:5173/ >/dev/null; then
-            sudo docker logs wonbills-frontend || true
+            echo "Production frontend health check failed."
+            sudo docker logs --tail 100 wonbills-frontend || true
             rollback
             exit 1
           fi
 
+          echo "Deployment and production health checks completed."
           sudo docker ps --filter name=wonbills-backend --filter name=wonbills-frontend
           REMOTE
-
